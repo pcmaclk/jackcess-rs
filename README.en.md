@@ -2,7 +2,7 @@
 
 [![CI](https://github.com/pcmaclk/jackcess-rs/actions/workflows/ci.yml/badge.svg)](https://github.com/pcmaclk/jackcess-rs/actions/workflows/ci.yml)
 
-[English](README.en.md) | [简体中文](README.md)
+English | [简体中文](README.md)
 
 A Rust port of [Jackcess](https://jackcess.sourceforge.io/) 5.0.4, the pure-Java
 library for reading and writing Microsoft Access databases (Jet / ACE `.mdb` and
@@ -1183,6 +1183,7 @@ byte-identical for any row count; `Database::add_rows` keeps the batch
 per-row history is needed).  The `diag200` scenario (the `partialupdate` table
 shape plus 200 filler rows added one at a time) is part of the harness
 defaults and pins this.
+
 
 
 
