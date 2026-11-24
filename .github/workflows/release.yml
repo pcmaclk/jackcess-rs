@@ -41,18 +41,19 @@ jobs:
         run: |
           set -euo pipefail
           TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          REL="${TAG#v}"
           mkdir -p dist
           if [ "$RUNNER_OS" = "Windows" ]; then
             for b in mdbgen mdbdump jetcrypt zonedategen; do
               cp "target/release/${b}.exe" dist/
             done
             powershell -NoProfile -Command \
-              "Compress-Archive -Path dist/*.exe -DestinationPath 'dist/jackcess-rs-${TAG}-${{ matrix.name }}.zip'"
+              "Compress-Archive -Path dist/*.exe -DestinationPath 'dist/jackcess-rs-${REL}-${{ matrix.name }}.zip'"
           else
             for b in mdbgen mdbdump jetcrypt zonedategen; do
               cp "target/release/${b}" dist/
             done
-            (cd dist && zip -j "jackcess-rs-${TAG}-${{ matrix.name }}.zip" \
+            (cd dist && zip -j "jackcess-rs-${REL}-${{ matrix.name }}.zip" \
               mdbgen mdbdump jetcrypt zonedategen)
           fi
           ls -l dist
@@ -67,4 +68,5 @@ jobs:
           gh release view "$TAG" >/dev/null 2>&1 || \
             gh release create "$TAG" --title "$TAG" --prerelease
           gh release upload "$TAG" dist/*.zip --clobber
+
 
