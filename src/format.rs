@@ -469,10 +469,10 @@ fn encode_multi_byte(page: u16, s: &str) -> Vec<u8> {
 // IBM DBCS code pages
 // ---------------------------------------------------------------------------
 
-/// The tables `java-src/CodePageGen.java bin` generated from the JDK charsets
-/// (see its documentation for the layout).  They are embedded so the port
-/// needs neither a charset library nor a JVM to decode these pages.
-static DBCS_TABLE_DATA: &[u8] = include_bytes!("../resources/format_ref/cp_dbcs.bin");
+// The tables `java-src/CodePageGen.java bin` generated from the JDK charsets
+// (see its documentation for the layout).  They are embedded zlib-compressed
+// under `resources/z/` so the port needs neither a charset library nor a JVM
+// to decode these pages.
 
 /// SBCS/DBCS EBCDIC with SO/SI shifts (`DoubleByte.Decoder_EBCDIC`)
 const DBCS_KIND_SHIFT: u8 = 0;
@@ -628,7 +628,7 @@ impl<'a> DbcsReader<'a> {
 
 fn parse_dbcs_tables() -> DbcsData {
     let mut r = DbcsReader {
-        data: DBCS_TABLE_DATA,
+        data: crate::embedded::dbcs_table(),
         pos: 0,
     };
     assert_eq!(
@@ -689,7 +689,11 @@ fn parse_dbcs_tables() -> DbcsData {
             enc,
         });
     }
-    assert_eq!(r.pos, DBCS_TABLE_DATA.len(), "trailing IBM DBCS table data");
+    assert_eq!(
+        r.pos,
+        crate::embedded::dbcs_table().len(),
+        "trailing IBM DBCS table data"
+    );
     DbcsData { pages }
 }
 

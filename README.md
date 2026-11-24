@@ -48,7 +48,7 @@ The crate has two opt-out features; both are on by default, so a plain
 
 | feature | what it adds | approximate binary cost |
 | --- | --- | --- |
-| `create` | the embedded `empty*.mdb/accdb` templates and `Database::create*` | ~1.4 MB of templates |
+| `create` | the embedded `empty*.mdb/accdb` templates and `Database::create*` | ~0.1 MB (compressed templates) |
 | `crypto` | page encoding, Jet/Office passwords, jackcess-encrypt-compatible handlers, MSISAM (`.mny`) decoding, and the crypto dependencies | ~1.9 MB in `mdbgen.exe` |
 
 A read-only application that only opens unencoded Jet/ACE databases can turn
@@ -69,8 +69,8 @@ unencrypted databases open normally.  Measured with `lto = "fat"`,
 | --- | --- |
 | minimal consumer (open + table names), default features | 3.63 MB |
 | minimal consumer, `default-features = false` | 3.37 MB |
-| `mdbgen.exe`, default features | 8.08 MB |
-| `mdbgen.exe`, `--no-default-features` | 6.14 MB |
+| `mdbgen.exe`, default features | 5.62 MB |
+| `mdbgen.exe`, `--no-default-features` | 5.30 MB |
 
 `query`, `export`, `ole`, `complex`, `deflate` and `expr` are not separate
 features: the table read/write paths use complex columns, OLE blobs, calculated
@@ -1179,6 +1179,7 @@ byte-identical for any row count; `Database::add_rows` keeps the batch
 per-row history is needed).  The `diag200` scenario (the `partialupdate` table
 shape plus 200 filler rows added one at a time) is part of the harness
 defaults and pins this.
+
 
 
 

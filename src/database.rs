@@ -1326,12 +1326,12 @@ impl Database {
         #[cfg(feature = "create")]
         {
             let template: &[u8] = match file_format {
-                FileFormat::V2000 => include_bytes!("../resources/empty.mdb"),
-                FileFormat::V2003 => include_bytes!("../resources/empty2003.mdb"),
-                FileFormat::V2007 => include_bytes!("../resources/empty2007.accdb"),
-                FileFormat::V2010 => include_bytes!("../resources/empty2010.accdb"),
-                FileFormat::V2016 => include_bytes!("../resources/empty2016.accdb"),
-                FileFormat::V2019 => include_bytes!("../resources/empty2019.accdb"),
+                FileFormat::V2000 => crate::embedded::empty_mdb(),
+                FileFormat::V2003 => crate::embedded::empty2003_mdb(),
+                FileFormat::V2007 => crate::embedded::empty2007_accdb(),
+                FileFormat::V2010 => crate::embedded::empty2010_accdb(),
+                FileFormat::V2016 => crate::embedded::empty2016_accdb(),
+                FileFormat::V2019 => crate::embedded::empty2019_accdb(),
                 // `DatabaseImpl.create`: a format without an empty template cannot
                 // be created.  Java's `FileFormat.toString()` is
                 // `name() + " [" + JetFormat + "]"`, so the MSISAM message reads
@@ -1463,12 +1463,12 @@ impl Database {
         settings: &OpenSettings,
     ) -> Result<Database> {
         let template: &[u8] = match file_format {
-            FileFormat::V2000 => include_bytes!("../resources/empty.mdb"),
-            FileFormat::V2003 => include_bytes!("../resources/empty2003.mdb"),
-            FileFormat::V2007 => include_bytes!("../resources/empty2007.accdb"),
-            FileFormat::V2010 => include_bytes!("../resources/empty2010.accdb"),
-            FileFormat::V2016 => include_bytes!("../resources/empty2016.accdb"),
-            FileFormat::V2019 => include_bytes!("../resources/empty2019.accdb"),
+            FileFormat::V2000 => crate::embedded::empty_mdb(),
+            FileFormat::V2003 => crate::embedded::empty2003_mdb(),
+            FileFormat::V2007 => crate::embedded::empty2007_accdb(),
+            FileFormat::V2010 => crate::embedded::empty2010_accdb(),
+            FileFormat::V2016 => crate::embedded::empty2016_accdb(),
+            FileFormat::V2019 => crate::embedded::empty2019_accdb(),
             // `DatabaseImpl.create` formats the message with its `mdbFile`
             // argument, which `DatabaseBuilder.create` leaves null when only a
             // channel is configured.

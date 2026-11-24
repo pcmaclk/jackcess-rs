@@ -42,3 +42,10 @@
 /java-src/
 /jackcess-src/
 /*.jar
+
+# Raw runtime resources: the build embeds the zlib copies under resources/z/
+/resources/empty*.mdb
+/resources/empty*.accdb
+/resources/index_codes_*.txt
+/resources/index_mappings_ext_gen_97.txt
+/resources/format_ref/

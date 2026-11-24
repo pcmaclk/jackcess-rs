@@ -129,14 +129,6 @@ const KANA_VOWEL_CODES: [u8; 79] = [
 
 // the embedded weight tables
 
-const CODES_GENLEG: &str = include_str!("../resources/index_codes_genleg.txt");
-const EXT_CODES_GENLEG: &str = include_str!("../resources/index_codes_ext_genleg.txt");
-const CODES_GEN: &str = include_str!("../resources/index_codes_gen.txt");
-const EXT_CODES_GEN: &str = include_str!("../resources/index_codes_ext_gen.txt");
-const TERTIARY_WEIGHTS_GEN: &str = include_str!("../resources/index_codes_tert_gen.txt");
-const CODES_GEN_97: &str = include_str!("../resources/index_codes_gen_97.txt");
-const EXT_MAPPINGS_GEN_97: &str = include_str!("../resources/index_mappings_ext_gen_97.txt");
-
 // the surrogate ranges of the general table (GeneralIndexCodes)
 
 const HIGH_SURROGATE_PLANE2_START: u16 = 0xD840;
@@ -432,7 +424,7 @@ fn gen97_collation() -> &'static Collation {
 
 fn build_legacy() -> Result<Collation> {
     let codes = load_codes(
-        CODES_GENLEG,
+        crate::embedded::index_codes_genleg(),
         0x0000,
         0x00FF,
         SurrogateSource::Ignored,
@@ -440,7 +432,7 @@ fn build_legacy() -> Result<Collation> {
         VARIABLE_UNIT_WIDTH,
     )?;
     let ext = load_codes(
-        EXT_CODES_GENLEG,
+        crate::embedded::index_codes_ext_genleg(),
         0x0100,
         0xFFFF,
         SurrogateSource::Ignored,
@@ -459,7 +451,7 @@ fn build_legacy() -> Result<Collation> {
 
 fn build_general() -> Result<Collation> {
     let codes = load_codes(
-        CODES_GEN,
+        crate::embedded::index_codes_gen(),
         0x0000,
         0x00FF,
         SurrogateSource::Ignored,
@@ -467,7 +459,7 @@ fn build_general() -> Result<Collation> {
         GENERAL_PRIMARY_UNIT_WIDTH,
     )?;
     let ext = load_codes(
-        EXT_CODES_GEN,
+        crate::embedded::index_codes_ext_gen(),
         0x0100,
         0xFFFF,
         SurrogateSource::General,
@@ -480,20 +472,20 @@ fn build_general() -> Result<Collation> {
         kind: Kind::General,
         handlers,
         primary_width: GENERAL_PRIMARY_UNIT_WIDTH,
-        tertiary: load_tertiary_weights(TERTIARY_WEIGHTS_GEN)?,
+        tertiary: load_tertiary_weights(crate::embedded::index_codes_tert_gen())?,
     })
 }
 
 fn build_general_97() -> Result<Collation> {
     let codes = load_codes(
-        CODES_GEN_97,
+        crate::embedded::index_codes_gen_97(),
         0x0000,
         0x00FF,
         SurrogateSource::Ignored,
         None,
         VARIABLE_UNIT_WIDTH,
     )?;
-    let mappings = load_mappings(EXT_MAPPINGS_GEN_97)?;
+    let mappings = load_mappings(crate::embedded::index_mappings_ext_gen_97())?;
 
     let mut handlers: Vec<CharHandler> = Vec::with_capacity(0x10000);
     handlers.extend(codes.iter().cloned());

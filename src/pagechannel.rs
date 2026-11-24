@@ -553,7 +553,7 @@ mod tests {
     fn new_channel(name: &str) -> PageChannel {
         let path = test_tmp_dir().join(name);
         let _ = std::fs::remove_file(&path);
-        std::fs::write(&path, include_bytes!("../resources/empty2003.mdb")).unwrap();
+        std::fs::write(&path, crate::embedded::empty2003_mdb()).unwrap();
         let mut ch = PageChannel::new(
             Box::new(FileChannel::open(&path).unwrap()),
             JetFormat::version_4(),

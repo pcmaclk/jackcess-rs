@@ -20,6 +20,7 @@ pub mod database;
 pub mod datatype;
 pub mod datenums;
 pub mod deflate;
+pub mod embedded;
 pub mod error;
 pub mod export;
 pub mod expr;

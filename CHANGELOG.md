@@ -49,9 +49,11 @@ for encryption).
 - `cargo build --release --no-default-features` builds a read-only core for
   unencoded Jet/ACE databases (creating a database, opening an encrypted one or
   opening MSISAM returns `Unsupported` without the corresponding feature).
+- Runtime resources are stored zlib-compressed under `resources/z/` and
+  inflated once on first use; the raw templates/tables are not committed.
 - Measured on Windows x64 with `lto = "fat"`, `codegen-units = 1`,
   `panic = "abort"`, `strip = "symbols"`: minimal consumer 3.37 MB
-  (3.63 MB with defaults), `mdbgen.exe` 6.14 MB (8.08 MB with defaults).
+  (3.63 MB with defaults), `mdbgen.exe` 5.30 MB (5.62 MB with defaults).
 - `query`, `export`, `ole`, `complex`, `deflate` and `expr` remain always-on:
   the table read/write path depends on complex columns, OLE blobs, calculated
   columns and expression validation directly.
@@ -68,4 +70,5 @@ for encryption).
   in README.md.
 - OLE v4 has no Windows-authored sample (validated against POI-generated
   fixtures).
+
 
