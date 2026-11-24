@@ -9,9 +9,11 @@ pub mod bitset;
 pub mod builder;
 pub mod bytebuf;
 pub mod byteutil;
+pub mod codec;
 pub mod column;
 pub mod columnfmt;
 pub mod complex;
+#[cfg(feature = "crypto")]
 pub mod crypt;
 pub mod cursor;
 pub mod database;

@@ -19,6 +19,13 @@
 //! Usage: `customlink <outDir> <V2003|V2007|V2010|V2016>`
 
 use std::collections::BTreeMap;
+fn hex_encode(bytes: impl AsRef<[u8]>) -> String {
+    bytes
+        .as_ref()
+        .iter()
+        .map(|b| format!("{:02x}", b))
+        .collect()
+}
 use std::path::{Path, PathBuf};
 
 use jackcess::column::ColumnSpec;
@@ -291,7 +298,7 @@ fn format_value(value: &Value) -> String {
         Value::Null => "<null>".to_string(),
         Value::Long(value) => value.to_string(),
         Value::Text(value) => value.clone(),
-        Value::Bytes(value) => format!("bytes:{}", hex::encode(value)),
+        Value::Bytes(value) => format!("bytes:{}", hex_encode(value)),
         other => format!("{:?}", other),
     }
 }
@@ -300,7 +307,7 @@ fn md5_file(path: &Path) -> Result<String> {
     let bytes = std::fs::read(path)?;
     let mut digest = Md5::new();
     digest.update(&bytes);
-    Ok(hex::encode(digest.finalize()))
+    Ok(hex_encode(digest.finalize()))
 }
 
 /// The loader form: Java's `CustomLinkResolver` subclass from

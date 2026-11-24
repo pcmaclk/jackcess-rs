@@ -41,6 +41,42 @@ powershell -ExecutionPolicy Bypass -File fetch-external.ps1
 powershell -ExecutionPolicy Bypass -File fetch-external.ps1 -Proxy http://127.0.0.1:10808
 ```
 
+## Feature flags
+
+The crate has two opt-out features; both are on by default, so a plain
+`cargo build` gives the full, byte-identical library:
+
+| feature | what it adds | approximate binary cost |
+| --- | --- | --- |
+| `create` | the embedded `empty*.mdb/accdb` templates and `Database::create*` | ~1.4 MB of templates |
+| `crypto` | page encoding, Jet/Office passwords, jackcess-encrypt-compatible handlers, MSISAM (`.mny`) decoding, and the crypto dependencies | ~1.9 MB in `mdbgen.exe` |
+
+A read-only application that only opens unencoded Jet/ACE databases can turn
+both off:
+
+```toml
+[dependencies]
+jackcess = { version = "5.0.4-rs.1", default-features = false }
+```
+
+With `--no-default-features`, creating a database returns
+`Error::Unsupported` unless `create` is enabled, and opening an encoded or
+MSISAM file returns `Unsupported` unless `crypto` is enabled; plain
+unencrypted databases open normally.  Measured with `lto = "fat"`,
+`codegen-units = 1`, `panic = "abort"` and `strip = "symbols"`:
+
+| build | size |
+| --- | --- |
+| minimal consumer (open + table names), default features | 3.63 MB |
+| minimal consumer, `default-features = false` | 3.37 MB |
+| `mdbgen.exe`, default features | 8.08 MB |
+| `mdbgen.exe`, `--no-default-features` | 6.14 MB |
+
+`query`, `export`, `ole`, `complex`, `deflate` and `expr` are not separate
+features: the table read/write paths use complex columns, OLE blobs, calculated
+columns and expression validation directly, and query/export are small next to
+those core dependencies.  They stay compiled in every configuration.
+
 ## Versioning
 
 The version has two independent parts:
@@ -1143,6 +1179,7 @@ byte-identical for any row count; `Database::add_rows` keeps the batch
 per-row history is needed).  The `diag200` scenario (the `partialupdate` table
 shape plus 200 filler rows added one at a time) is part of the harness
 defaults and pins this.
+
 
 
 

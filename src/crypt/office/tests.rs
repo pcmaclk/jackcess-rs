@@ -64,15 +64,15 @@ fn agile_2010_matches_the_java_fixture() {
     let config = AgileEncryptionConfig::office_2010();
     let w = writer(config.clone());
     assert_eq!(
-        hex::encode(w.encrypt_verifier_hash_input().unwrap()),
+        hex_encode(w.encrypt_verifier_hash_input().unwrap()),
         "06a872fd0776393905276775d3bc00f7"
     );
     assert_eq!(
-        hex::encode(w.encrypt_verifier_hash_value().unwrap()),
+        hex_encode(w.encrypt_verifier_hash_value().unwrap()),
         "519786d350abb0e28ad2523b2c06f5429884038dba5407ef98e731f67ad14a69"
     );
     assert_eq!(
-        hex::encode(w.encrypt_key_value().unwrap()),
+        hex_encode(w.encrypt_key_value().unwrap()),
         "1c77c118596f1c9b9b678462d27f9683"
     );
     assert_eq!(
@@ -96,15 +96,15 @@ fn agile_2013_matches_the_java_fixture() {
     let config = AgileEncryptionConfig::office_2013();
     let w = writer(config.clone());
     assert_eq!(
-        hex::encode(w.encrypt_verifier_hash_input().unwrap()),
+        hex_encode(w.encrypt_verifier_hash_input().unwrap()),
         "fc6b701773767ad41ff6845ae88884ce"
     );
     assert_eq!(
-        hex::encode(w.encrypt_verifier_hash_value().unwrap()),
+        hex_encode(w.encrypt_verifier_hash_value().unwrap()),
         "701c5dbbb344728b5ef1f5bb4b2329e7711e1bc6c8b2adf7c788ecc63e919a47fa3f071a97bc97733b58baa4470afd3f3c07afaf904ae39c4804767ff66f7f24"
     );
     assert_eq!(
-        hex::encode(w.encrypt_key_value().unwrap()),
+        hex_encode(w.encrypt_key_value().unwrap()),
         "1d5b158ce5fdc671f65959687daf4c0aaf70d45e8ce3850c238b1d0ddd8f8fe3"
     );
     assert_eq!(
@@ -149,8 +149,8 @@ fn agile_page_cipher_matches_the_java_fixture() {
             &mut page,
         )
         .unwrap();
-        assert_eq!(hex::encode(&page[..16]), first);
-        assert_eq!(hex::encode(&page[4080..]), last);
+        assert_eq!(hex_encode(&page[..16]), first);
+        assert_eq!(hex_encode(&page[4080..]), last);
 
         // and the read path reverses it
         let w = writer(config.clone());
@@ -233,20 +233,20 @@ fn standard_key_derivation_matches_the_java_fixture() {
     let salt = seq(SALT, 16);
     let base_hash = ecma_standard_base_hash(&pwd, &salt);
     assert_eq!(
-        hex::encode(&base_hash),
+        hex_encode(&base_hash),
         "d2b65aa31aa46ab3dbf177c3e1a28edb6dff627f"
     );
     let iter_hash = ecma_standard_iter_hash(&base_hash, HASH_ITERATIONS);
     assert_eq!(
-        hex::encode(&iter_hash),
+        hex_encode(&iter_hash),
         "d0651466b70a5dc51bf4b95194fd444eb646ebb9"
     );
     assert_eq!(
-        hex::encode(ecma_standard_derive_key(&iter_hash, &block_bytes(), 16)),
+        hex_encode(ecma_standard_derive_key(&iter_hash, &block_bytes(), 16)),
         "9a632ec5fe52865aeaecfbe6bc29b647"
     );
     assert_eq!(
-        hex::encode(ecma_standard_derive_key(&iter_hash, &[0u8; 4], 16)),
+        hex_encode(ecma_standard_derive_key(&iter_hash, &[0u8; 4], 16)),
         "0d067c42733186c4384c8e4609e6dd31"
     );
 }
@@ -258,7 +258,7 @@ fn rc4_cryptoapi_key_derivation_matches_the_java_fixture() {
     let salt = seq(SALT, 16);
     let base_hash = ecma_standard_base_hash(&pwd, &salt);
     assert_eq!(
-        hex::encode(rc4_cryptoapi_derive_key(
+        hex_encode(rc4_cryptoapi_derive_key(
             &base_hash,
             &block_bytes(),
             16,
@@ -267,7 +267,7 @@ fn rc4_cryptoapi_key_derivation_matches_the_java_fixture() {
         "c43910a33437b3e5a3cdfa7205b8c2c2"
     );
     assert_eq!(
-        hex::encode(rc4_cryptoapi_derive_key(&base_hash, &[0u8; 4], 16, 128)),
+        hex_encode(rc4_cryptoapi_derive_key(&base_hash, &[0u8; 4], 16, 128)),
         "4fc7f0d729072876310c1e0ac2f7b6b2"
     );
     // a 40 bit key is 5 bytes padded out to 16
@@ -283,17 +283,17 @@ fn binary_rc4_key_derivation_matches_the_java_fixture() {
     let pwd = get_password_bytes(Some(PASSWORD));
     let salt = seq(SALT, 16);
     assert_eq!(
-        hex::encode(binary_rc4_fill_hash(&pwd, &salt)),
+        hex_encode(binary_rc4_fill_hash(&pwd, &salt)),
         "0355e4d759404142434445464748494a4b4c4d4e4f"
     );
     let base_hash = binary_rc4_base_hash(&pwd, &salt);
-    assert_eq!(hex::encode(&base_hash), "b567ee3b3e");
+    assert_eq!(hex_encode(&base_hash), "b567ee3b3e");
     assert_eq!(
-        hex::encode(binary_rc4_derive_key(&base_hash, &block_bytes())),
+        hex_encode(binary_rc4_derive_key(&base_hash, &block_bytes())),
         "6eb9d0de5e796f7f673e74f478f4428b"
     );
     assert_eq!(
-        hex::encode(binary_rc4_derive_key(&base_hash, &[0u8; 4])),
+        hex_encode(binary_rc4_derive_key(&base_hash, &[0u8; 4])),
         "4cb68489f08737a1f38b7ae204db25be"
     );
 }
@@ -593,4 +593,11 @@ fn office_encryption_round_trip() {
     ] {
         let _ = std::fs::remove_file(p);
     }
+}
+fn hex_encode(bytes: impl AsRef<[u8]>) -> String {
+    bytes
+        .as_ref()
+        .iter()
+        .map(|b| format!("{:02x}", b))
+        .collect()
 }

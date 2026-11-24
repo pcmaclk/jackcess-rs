@@ -1,7 +1,7 @@
 //! Port of `com.healthmarketscience.jackcess.impl.PageChannel`.
 
 use crate::bytebuf::ByteBuf;
-use crate::crypt::codec::{CodecHandler, CodecProvider, DummyHandler};
+use crate::codec::{CodecHandler, CodecProvider, DummyHandler};
 use crate::error::{Error, Result};
 use crate::format::{Charset, JetFormat};
 use crate::page_types;

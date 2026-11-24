@@ -118,7 +118,7 @@ pub struct DatabaseBuilder {
     /// `DatabaseBuilder._timeZone`
     time_zone: Option<crate::datenums::TimeZone>,
     /// `DatabaseBuilder._codecProvider`
-    codec_provider: Option<Box<dyn crate::crypt::CodecProvider>>,
+    codec_provider: Option<Box<dyn crate::codec::CodecProvider>>,
     /// `DatabaseBuilder._fileFormat`
     file_format: Option<FileFormat>,
     /// `DatabaseBuilder._channel`
@@ -285,7 +285,7 @@ impl DatabaseBuilder {
     /// jet encoding, Office encryption or a MSISAM password).
     pub fn set_codec_provider<P>(mut self, provider: P) -> DatabaseBuilder
     where
-        P: crate::crypt::CodecProvider + 'static,
+        P: crate::codec::CodecProvider + 'static,
     {
         self.codec_provider = Some(Box::new(provider));
         self

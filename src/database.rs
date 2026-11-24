@@ -792,7 +792,7 @@ pub struct OpenSettings<'a> {
     /// `DatabaseBuilder.setTimeZone`.
     pub time_zone: Option<crate::datenums::TimeZone>,
     /// `DatabaseBuilder.setCodecProvider`.
-    pub codec_provider: Option<&'a dyn crate::crypt::CodecProvider>,
+    pub codec_provider: Option<&'a dyn crate::codec::CodecProvider>,
     /// `DatabaseBuilder.setFileFormat`: the format of a database which is
     /// created (ignored by the open entry points, like Java).
     pub file_format: Option<FileFormat>,
@@ -1003,9 +1003,9 @@ impl Database {
             channel.auto_sync = auto_sync;
         }
         channel.charset = channel.format.charset;
-        let codec_provider: &dyn crate::crypt::CodecProvider = settings
+        let codec_provider: &dyn crate::codec::CodecProvider = settings
             .codec_provider
-            .unwrap_or(&crate::crypt::DefaultCodecProvider::INSTANCE);
+            .unwrap_or(&crate::codec::DefaultCodecProvider::INSTANCE);
         channel.install_codec(codec_provider)?;
         channel.initialize()?;
         let format = channel.format.clone();
@@ -1140,7 +1140,7 @@ impl Database {
     /// password protected Money file.  Every other format uses the Java
     /// `DefaultCodecProvider`.
     ///
-    /// [`DefaultCodecProvider`]: crate::crypt::DefaultCodecProvider
+    /// [`DefaultCodecProvider`]: crate::codec::DefaultCodecProvider
     pub fn open_path(path: &Path) -> Result<Database> {
         Self::open_path_with_mode(path, false, None)
     }
@@ -1151,7 +1151,7 @@ impl Database {
     /// [`crate::crypt::CryptCodecProvider`] to open an encoded database.
     pub fn open_path_with_provider(
         path: &Path,
-        codec_provider: &dyn crate::crypt::CodecProvider,
+        codec_provider: &dyn crate::codec::CodecProvider,
     ) -> Result<Database> {
         Self::open_path_with_mode(path, false, Some(codec_provider))
     }
@@ -1167,6 +1167,7 @@ impl Database {
     /// `InvalidCredentials("Incorrect password provided")`, like Java's
     /// `InvalidCredentialsException`.  Use
     /// [`Database::verify_database_password`] to check a jet password.
+    #[cfg(feature = "crypto")]
     pub fn open_path_with_password(path: &Path, password: Option<&str>) -> Result<Database> {
         let provider = crate::crypt::CryptCodecProvider::from_password(password);
         Self::open_path_with_mode(path, false, Some(&provider))
@@ -1188,7 +1189,7 @@ impl Database {
     /// Opens an existing database read-only with the given codec provider.
     pub fn open_path_read_only_with_provider(
         path: &Path,
-        codec_provider: &dyn crate::crypt::CodecProvider,
+        codec_provider: &dyn crate::codec::CodecProvider,
     ) -> Result<Database> {
         Self::open_path_with_mode(path, true, Some(codec_provider))
     }
@@ -1204,7 +1205,7 @@ impl Database {
     fn open_path_with_mode(
         path: &Path,
         read_only: bool,
-        codec_provider: Option<&dyn crate::crypt::CodecProvider>,
+        codec_provider: Option<&dyn crate::codec::CodecProvider>,
     ) -> Result<Database> {
         let mut settings = OpenSettings::new();
         settings.read_only = read_only;
@@ -1250,14 +1251,25 @@ impl Database {
             } else {
                 Box::new(ch)
             };
+            #[cfg(feature = "crypto")]
+            #[cfg(feature = "crypto")]
             let auto_provider;
-            let codec_provider: &dyn crate::crypt::CodecProvider = match settings.codec_provider {
+            let codec_provider: &dyn crate::codec::CodecProvider = match settings.codec_provider {
                 Some(provider) => provider,
                 None if format.codec_type == crate::format::CodecType::Msisam => {
-                    auto_provider = crate::crypt::CryptCodecProvider::new();
-                    &auto_provider
+                    #[cfg(feature = "crypto")]
+                    {
+                        auto_provider = crate::crypt::CryptCodecProvider::new();
+                        &auto_provider
+                    }
+                    #[cfg(not(feature = "crypto"))]
+                    {
+                        return Err(Error::Unsupported(
+                            "MSISAM databases require the `crypto` feature".to_string(),
+                        ));
+                    }
                 }
-                None => &crate::crypt::DefaultCodecProvider::INSTANCE,
+                None => &crate::codec::DefaultCodecProvider::INSTANCE,
             };
             let channel =
                 PageChannel::new(io, format, settings.auto_sync.unwrap_or(DEFAULT_AUTO_SYNC));
@@ -1305,37 +1317,46 @@ impl Database {
         path: &Path,
         settings: &OpenSettings,
     ) -> Result<Database> {
-        let template: &[u8] = match file_format {
-            FileFormat::V2000 => include_bytes!("../resources/empty.mdb"),
-            FileFormat::V2003 => include_bytes!("../resources/empty2003.mdb"),
-            FileFormat::V2007 => include_bytes!("../resources/empty2007.accdb"),
-            FileFormat::V2010 => include_bytes!("../resources/empty2010.accdb"),
-            FileFormat::V2016 => include_bytes!("../resources/empty2016.accdb"),
-            FileFormat::V2019 => include_bytes!("../resources/empty2019.accdb"),
-            // `DatabaseImpl.create`: a format without an empty template cannot
-            // be created.  Java's `FileFormat.toString()` is
-            // `name() + " [" + JetFormat + "]"`, so the MSISAM message reads
-            // `File format MSISAM [MSISAM] ...`; the text is reproduced here
-            // exactly.
-            FileFormat::Msisam => {
-                return Err(Error::Jackcess(format!(
-                    "File format MSISAM [MSISAM] does not support file creation for {}",
-                    path.display()
-                )))
-            }
-            other => {
-                return Err(Error::Jackcess(format!(
-                    "File format {:?} does not support file creation",
-                    other
-                )))
-            }
-        };
-        std::fs::write(path, template)?;
-        let mut effective = settings.clone();
-        effective.read_only = false;
-        let mut db = Database::open_path_with_settings(path, &effective)?;
-        db.file_format = Some(file_format);
-        Ok(db)
+        #[cfg(not(feature = "create"))]
+        {
+            return Err(Error::Unsupported(
+                "Database::create requires the `create` feature".to_string(),
+            ));
+        }
+        #[cfg(feature = "create")]
+        {
+            let template: &[u8] = match file_format {
+                FileFormat::V2000 => include_bytes!("../resources/empty.mdb"),
+                FileFormat::V2003 => include_bytes!("../resources/empty2003.mdb"),
+                FileFormat::V2007 => include_bytes!("../resources/empty2007.accdb"),
+                FileFormat::V2010 => include_bytes!("../resources/empty2010.accdb"),
+                FileFormat::V2016 => include_bytes!("../resources/empty2016.accdb"),
+                FileFormat::V2019 => include_bytes!("../resources/empty2019.accdb"),
+                // `DatabaseImpl.create`: a format without an empty template cannot
+                // be created.  Java's `FileFormat.toString()` is
+                // `name() + " [" + JetFormat + "]"`, so the MSISAM message reads
+                // `File format MSISAM [MSISAM] ...`; the text is reproduced here
+                // exactly.
+                FileFormat::Msisam => {
+                    return Err(Error::Jackcess(format!(
+                        "File format MSISAM [MSISAM] does not support file creation for {}",
+                        path.display()
+                    )))
+                }
+                other => {
+                    return Err(Error::Jackcess(format!(
+                        "File format {:?} does not support file creation",
+                        other
+                    )))
+                }
+            };
+            std::fs::write(path, template)?;
+            let mut effective = settings.clone();
+            effective.read_only = false;
+            let mut db = Database::open_path_with_settings(path, &effective)?;
+            db.file_format = Some(file_format);
+            Ok(db)
+        }
     }
 
     /// Creates a new database and applies the given database, summary and user
@@ -1411,7 +1432,7 @@ impl Database {
     pub fn open_with_channel_with_provider(
         io: Box<dyn crate::pagechannel::FileIo>,
         read_only: bool,
-        codec_provider: &dyn crate::crypt::CodecProvider,
+        codec_provider: &dyn crate::codec::CodecProvider,
     ) -> Result<Database> {
         let mut settings = OpenSettings::new();
         settings.read_only = read_only;
@@ -1535,14 +1556,24 @@ impl Database {
         } else {
             io
         };
+        #[cfg(feature = "crypto")]
         let auto_provider;
-        let codec_provider: &dyn crate::crypt::CodecProvider = match settings.codec_provider {
+        let codec_provider: &dyn crate::codec::CodecProvider = match settings.codec_provider {
             Some(provider) => provider,
             None if format.codec_type == crate::format::CodecType::Msisam => {
-                auto_provider = crate::crypt::CryptCodecProvider::new();
-                &auto_provider
+                #[cfg(feature = "crypto")]
+                {
+                    auto_provider = crate::crypt::CryptCodecProvider::new();
+                    &auto_provider
+                }
+                #[cfg(not(feature = "crypto"))]
+                {
+                    return Err(Error::Unsupported(
+                        "MSISAM databases require the `crypto` feature".to_string(),
+                    ));
+                }
             }
-            None => &crate::crypt::DefaultCodecProvider::INSTANCE,
+            None => &crate::codec::DefaultCodecProvider::INSTANCE,
         };
         let channel = PageChannel::new(io, format, settings.auto_sync.unwrap_or(DEFAULT_AUTO_SYNC));
         let mut effective = settings.clone();

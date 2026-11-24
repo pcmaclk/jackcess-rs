@@ -448,5 +448,12 @@ fn sha256_hex(data: &[u8]) -> Result<String> {
     use sha2::Digest;
     let mut digest = sha2::Sha256::new();
     digest.update(data);
-    Ok(hex::encode(digest.finalize()))
+    Ok(hex_encode(digest.finalize()))
+}
+fn hex_encode(bytes: impl AsRef<[u8]>) -> String {
+    bytes
+        .as_ref()
+        .iter()
+        .map(|b| format!("{:02x}", b))
+        .collect()
 }

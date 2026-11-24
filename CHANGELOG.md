@@ -41,6 +41,21 @@ for encryption).
 - 517 unit tests pass (1 ignored large sweep).
 - `cargo fmt --check` and `cargo clippy --all-targets -- -D warnings` pass.
 
+### Feature flags / size
+
+- `create` (default) carries the embedded empty-database templates and
+  `Database::create*`; `crypto` (default) carries page encoding, database
+  passwords, Office/ECMA/MSISAM decoders and the crypto dependencies.
+- `cargo build --release --no-default-features` builds a read-only core for
+  unencoded Jet/ACE databases (creating a database, opening an encrypted one or
+  opening MSISAM returns `Unsupported` without the corresponding feature).
+- Measured on Windows x64 with `lto = "fat"`, `codegen-units = 1`,
+  `panic = "abort"`, `strip = "symbols"`: minimal consumer 3.37 MB
+  (3.63 MB with defaults), `mdbgen.exe` 6.14 MB (8.08 MB with defaults).
+- `query`, `export`, `ole`, `complex`, `deflate` and `expr` remain always-on:
+  the table read/write path depends on complex columns, OLE blobs, calculated
+  columns and expression validation directly.
+
 ### Notes / known gaps
 
 - Java-side-only APIs (VBA/`MSysAccessObjects`, deleting relationships, removing
@@ -53,3 +68,4 @@ for encryption).
   in README.md.
 - OLE v4 has no Windows-authored sample (validated against POI-generated
   fixtures).
+

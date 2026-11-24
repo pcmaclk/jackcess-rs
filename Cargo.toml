@@ -9,6 +9,9 @@ readme = "README.md"
 keywords = ["access", "mdb", "accdb", "jet", "database"]
 categories = ["database", "parser-implementations"]
 exclude = ["target/*", "out/*", "external/*", "java-classes/*", ".rollback-backup-*", ".clippy_*"]
+# Only the tools that ship are listed below; the verification generators are
+# gated behind the `dev-bins` feature so `cargo build --release` stays small.
+autobins = false
 
 [lib]
 name = "jackcess"
@@ -25,18 +28,188 @@ path = "src/bin/mdbdump.rs"
 [[bin]]
 name = "jetcrypt"
 path = "src/bin/jetcrypt.rs"
+required-features = ["crypto"]
 
 [[bin]]
 name = "zonedategen"
 path = "src/bin/zonedategen.rs"
 
 [features]
+default = ["create", "crypto"]
+# Embedded empty-database templates and Database::create.
+create = []
+# Page encoding / encryption support (aes, rc4, sha1, sha2, md-5, base64,
+# getrandom, roxmltree) and jackcess-encrypt-compatible handlers.
+crypto = []
+
 # Tests that need the (uncommitted) Java/vs-Rust fixture corpora under
 # resources/*_ref, tools/ and external/.  They are skipped by default.
 fixtures = []
+# The Java-vs-Rust verification generators in src/bin.  They are development
+# tools, not part of the released crate; enable them with
+# `cargo build --features dev-bins` when running tools/verify-*.ps1.
+dev-bins = ["crypto"]
+
+# --- verification generators (development only) -------------------------
+
+[[bin]]
+name = "apisurface"
+path = "src/bin/apisurface.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "attachgen"
+path = "src/bin/attachgen.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "codepage"
+path = "src/bin/codepage.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "cursorgen"
+path = "src/bin/cursorgen.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "cursorrange"
+path = "src/bin/cursorrange.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "customlink"
+path = "src/bin/customlink.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "datetimegen"
+path = "src/bin/datetimegen.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "dbapi"
+path = "src/bin/dbapi.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "errorhandler"
+path = "src/bin/errorhandler.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "exportall"
+path = "src/bin/exportall.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "exportgen"
+path = "src/bin/exportgen.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "guidauto"
+path = "src/bin/guidauto.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "jet3crypt"
+path = "src/bin/jet3crypt.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "jet3depth"
+path = "src/bin/jet3depth.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "jet3dump"
+path = "src/bin/jet3dump.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "linkread"
+path = "src/bin/linkread.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "linkwrite"
+path = "src/bin/linkwrite.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "memdb"
+path = "src/bin/memdb.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "miscdeg"
+path = "src/bin/miscdeg.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "msisam"
+path = "src/bin/msisam.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "namemap"
+path = "src/bin/namemap.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "objapi"
+path = "src/bin/objapi.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "officecrypt"
+path = "src/bin/officecrypt.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "oledump"
+path = "src/bin/oledump.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "querydb"
+path = "src/bin/querydb.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "queryprops"
+path = "src/bin/queryprops.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "realcrypt"
+path = "src/bin/realcrypt.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "realquery"
+path = "src/bin/realquery.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "rowapi"
+path = "src/bin/rowapi.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "timezonegen"
+path = "src/bin/timezonegen.rs"
+required-features = ["dev-bins"]
+
+[[bin]]
+name = "utilapi"
+path = "src/bin/utilapi.rs"
+required-features = ["dev-bins"]
 
 [profile.release]
 opt-level = 3
+strip = "symbols"
 
 [dependencies]
 aes = "0.9.4"
@@ -46,11 +219,17 @@ chrono = { version = "0.4.45", default-features = false, features = ["std"] }
 chrono-tz = "0.10.4"
 encoding_rs = "0.8.44"
 getrandom = "0.4.3"
-hex = "0.4.3"
+
 md-5 = "0.11.0"
 rc4 = "0.2.0"
 roxmltree = "0.21.2"
 sha1 = "0.11.0"
 sha2 = "0.11.1"
+
+
+
+
+
+
 
 
