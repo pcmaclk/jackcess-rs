@@ -22,11 +22,11 @@ cargo test --lib        # 327 tests; no test fixtures needed
 ```
 
 This repository is the **minimal buildable crate**: it contains only the source
-and the 14 files (3.6 MB) that the library embeds at compile time (the
-`empty*.mdb/accdb` templates, the index collation tables and the generated
-code-page table).  The verification harnesses, the Java reference tools and the
-Java-vs-Rust test fixtures are development-only and are **not** part of this
-repository.
+and the zlib-compressed resources (about 1.5 MB) that the library embeds at
+compile time (the templates, index collation tables and generated code-page
+table under `resources/z/`, inflated once on first use).  The verification
+harnesses, the Java reference tools and the Java-vs-Rust test fixtures are
+development-only and are **not** part of this repository.
 
 The fixture-dependent tests are gated behind the `fixtures` feature, so they are
 compiled and run only in a development tree that has the test data:
@@ -123,6 +123,12 @@ change: publish a new upstream-segment version (e.g. `5.0.5`) rather than
 silently dropping the suffix on an existing `5.0.4` release.
 
 ## Verified byte-identical output
+
+> The 41 harnesses, `tools/`, `java-src/` and `external/` referenced in this
+> section belong to the development tree and are not shipped; the results are
+> kept as the pre-release verification record.  Only the generator sources
+> under `src/bin` are kept in the repository, behind the `dev-bins` feature.
+
 
 `tools\verify.ps1` (V2003 / Jet 4 unless stated otherwise):
 
@@ -415,71 +421,31 @@ Rust generator (`--now-ms`, one value per catalog object).
 
 | path | contents |
 | --- | --- |
-| `src/` | the Rust port (`jackcess` crate) |
-| `src/bin/mdbgen.rs` | generator for the verification scenarios |
-| `src/bin/mdbdump.rs` | structural dump (including foreign key references), row re-encode checker, property dump, relationship dump |
-| `java-src/` | Java reference generator and helper tools (`Gen`, `Append`, `GetDates`, `DbProps`, `TableProps`, `PropFixtures`, index oracle) |
-| `jackcess-src/` | extracted sources of jackcess 5.0.4 (reference) |
-| `resources/` | empty database templates, collation tables and property fixtures embedded by the crate |
-| `tools/verify.ps1` | end-to-end byte comparison harness |
-| `tools/verify-props.ps1` | property-map comparison harness |
-| `tools/verify-attach.ps1` | attachment/deflate byte comparison harness |
-| `tools/verify-link.ps1` | linked-database read/write comparison harness |
-| `tools/verify-expr.ps1` | expression-engine Java-oracle harness |
-| `tools/verify-query.ps1` | query-model/SQL Java-oracle harness |
-| `tools/verify-linkwrite.ps1` | linked-table write byte comparison harness |
-| `tools/verify-cursor.ps1` | cursor API byte comparison harness |
-| `tools/verify-cursor-range.ps1` | cursor ranges/savepoints/iterables byte comparison harness |
-| `tools/verify-export.ps1` | export/import text and database comparison harness |
-| `tools/verify-crypt.ps1` | Jet encoding/password byte comparison harness |
-| `tools/verify-crypt-office.ps1` | ACE agile/ECMA encryption comparison harness |
-| `tools/verify-querydb.ps1` | query/metadata integration comparison harness |
-| `tools/verify-namemap.ps1` | name-map blob comparison harness |
-| `tools/verify-exportall.ps1` | exportAll/streaming comparison harness |
-| `tools/verify-guid.ps1` | GUID auto-number behaviour + explicit-GUID byte harness |
-| `tools/verify-realquery.ps1` | real Access query files + ODBC link metadata harness |
-| `tools/verify-jet3.ps1` | Jet 3 / V1997 read dump harness (27 real files) |
-| `tools/verify-ole.ps1` | OLE compound-document / OleBlob harness |
-| `tools/verify-errorhandler.ps1` | ErrorHandler/DebugErrorHandler trace harness |
-| `tools/verify-queryprops.ps1` | query property-map / query name-map harness |
-| `tools/verify-customlink.ps1` | CustomLinkResolver moved-target harness |
-| `tools/verify-jet3-crypt.ps1` | Jet 3 encoded/password read harness |
-| `tools/verify-datetime.ps1` | DateTimeType / ColumnOrder / write-mode comparison harness |
-| `tools/verify-memdb.ps1` | in-memory database byte comparison harness |
-| `tools/verify-realcrypt.ps1` | real Access/jackcess-encrypt encrypted files harness |
-| `tools/verify-msisam.ps1` | MSISAM (.mny) read/decryption harness |
-| `tools/verify-codepage.ps1` | code-page decode/encode parity harness |
-| `tools/verify-apisurface.ps1` | Database/Table read-API surface harness |
-| `tools/verify-jet3-depth.ps1` | Jet 3 deep read/exception harness |
-| `tools/verify-miscdeg.ps1` | Double/float text, binary import, ColumnFormatter harness |
-| `tools/verify-timezone.ps1` | IANA/DST time-zone conversion harness |
-| `tools/verify-zonedates.ps1` | zoned DATE-mode value/lookup harness |
-| `tools/verify-rowapi.ps1` | Row/table-iteration/cursor API harness |
-| `tools/verify-dbapi.ps1` | DatabaseBuilder/iterables/metadata API harness |
-| `tools/verify-objapi.ps1` | Column/Index/Relationship/TableNameMap API harness |
-| `tools/verify-utilapi.ps1` | DataType/PropertyMap/OleBlob/validators/EvalConfig API harness |
-| `tools/verify-all.ps1` | runs every harness above and summarises |
-| `src/bin/attachgen.rs`, `src/bin/linkread.rs`, `src/bin/linkwrite.rs`, `src/bin/cursorgen.rs`, `src/bin/cursorrange.rs`, `src/bin/exportgen.rs`, `src/bin/jetcrypt.rs`, `src/bin/officecrypt.rs`, `src/bin/querydb.rs` | generators/dumpers for the specialty harnesses |
-| `tools/compare.py`, `tools/bytediff.py`, `tools/pagedump.py` | diff/debug helpers |
-| `out/` | generated files (scratch) |
+| `src/` | the Rust crate (library plus the four release bins `mdbgen`, `mdbdump`, `jetcrypt`, `zonedategen`; the verification generators under `src/bin` are also kept but gated behind `dev-bins`) |
+| `resources/z/` | zlib-compressed resources embedded at compile time (templates, collation tables, code-page table, about 1.5 MB); the raw files are not committed |
+| `Cargo.toml` / `Cargo.lock` | crate metadata and locked dependencies |
+| `README.md` / `README.en.md` | Chinese / English documentation |
+| `CHANGELOG.md`, `LICENSE`, `NOTICE` | release notes, Apache-2.0 license and upstream attribution |
+| `fetch-external.ps1` | optional: downloads the Java reference libraries, sources and real corpora used for development verification (it does not contain `tools/`, `java-src/` or the test fixtures) |
+| `.github/workflows/` | three-OS CI and release packaging |
 
 ## Environment
 
-- Rust: `C:\Tools\Rust` (`cargo` on `PATH` via `C:\Tools\Rust\cargo\bin`)
-- JDK: `C:\Tools\JDK25`
-- Java classpath for the reference tools: `jackcess-5.0.4.jar;java-classes`
-  (compile with `javac -encoding UTF-8 -cp jackcess-5.0.4.jar -d java-classes java-src\*.java`);
-  the encryption harnesses additionally use
-  `external\jackcess-encrypt-5.0.2.jar;external\bcprov-jdk18on-1.86.jar`
-- Cargo dependencies (fetched through the configured mirror): `rc4`, `sha1`,
-  `aes`, `sha2`, `md-5`, `base64`, `getrandom`, `roxmltree`, `hex` - used only
-  by the encryption codecs; the database engine itself remains std-only.
+Building and testing the crate only needs a Rust toolchain; there are no C or
+system-library dependencies.
 
-```
-cargo build
-cargo test --lib
-powershell -ExecutionPolicy Bypass -File tools\verify-all.ps1
-```
+The Java reference tools, the `tools/` harnesses, `java-src/`, `external/` and
+the Java-vs-Rust test fixtures live only in the development tree and are **not**
+part of this repository.  `fetch-external.ps1` restores the Java reference
+libraries, sources and real Access/encryption corpora; the full verification is
+run from the development tree with `tools\verify-all.ps1`.
+
+Cargo dependencies with the default features:
+
+- core: `chrono`, `chrono-tz`, `encoding_rs`, `bigdecimal`
+- `crypto`: `aes`, `sha1`, `sha2`, `md-5`, `rc4`, `base64`, `getrandom`, `roxmltree`
+
+The read/write engine itself only needs std.
 
 ## Architecture (mirrors the Java classes)
 
@@ -556,6 +522,10 @@ take the database explicitly; `EvalConfig` is exposed but the evaluator still
 uses its built-in temporal/numeric/function defaults.
 
 ## Test evidence beyond the end-to-end comparisons
+
+> The harnesses, oracles and fixtures cited here also live in the development
+> tree, not in the released repository.
+
 
 - `cargo test --lib` — 518 tests (517 passing, 1 large sweep ignored). They include:
   - index entry bytes and index pages against Java for 11 index shapes and 600

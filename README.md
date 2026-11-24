@@ -18,8 +18,8 @@ cargo build
 cargo test --lib        # 327 tests; no test fixtures needed
 ```
 
-本仓库是**可构建的最小 crate**：只包含源代码，以及库在编译期嵌入的 14 个文件（3.6 MB）
-（`empty*.mdb/accdb` 模板、索引排序表和生成的代码页表）。验证 harness、Java 参考工具
+本仓库是**可构建的最小 crate**：只包含源代码，以及库在编译期嵌入的 zlib 压缩资源（约 1.5 MB）
+（`resources/z/` 下的模板、索引排序表和生成的代码页表，首次使用时解压）。验证 harness、Java 参考工具
 以及 Java 与 Rust 对照用的测试 fixture 只用于开发，**不属于**本仓库。
 
 依赖 fixture 的测试由 `fixtures` feature 控制，因此只有在带有测试数据的开发树中才会
@@ -105,6 +105,9 @@ jackcess = { version = "5.0.4-rs.1", default-features = false }
 （例如 `5.0.5`），而不是悄悄去掉现有 `5.0.4` 发布上的后缀。
 
 ## 已验证的逐字节一致输出
+
+> 本节记录的 41 个 harness、`tools/`、`java-src/` 与 `external/` 都属于开发树，不随仓库发布；这里保留发布前的验证结果作为记录。仓库内只保留 `src/bin` 下的生成器源码，并且由 `dev-bins` feature 控制。
+
 
 `tools\verify.ps1`（除非另有说明，否则为 V2003 / Jet 4）：
 
@@ -344,70 +347,26 @@ catalog 时间戳被确定化：harness 读取 Java 生成器写入的 `DateCrea
 
 | 路径 | 内容 |
 | --- | --- |
-| `src/` | Rust 移植（`jackcess` crate） |
-| `src/bin/mdbgen.rs` | 验证场景生成器 |
-| `src/bin/mdbdump.rs` | 结构 dump（包括外键引用）、行重编码检查器、属性 dump、关系 dump |
-| `java-src/` | Java 参考生成器和辅助工具（`Gen`、`Append`、`GetDates`、`DbProps`、`TableProps`、`PropFixtures`、index oracle） |
-| `jackcess-src/` | 解压出的 jackcess 5.0.4 源码（参考） |
-| `resources/` | crate 内嵌的空数据库模板、排序表和属性 fixture |
-| `tools/verify.ps1` | 端到端逐字节比较 harness |
-| `tools/verify-props.ps1` | 属性 map 比较 harness |
-| `tools/verify-attach.ps1` | 附件/deflate 逐字节比较 harness |
-| `tools/verify-link.ps1` | 链接数据库读/写比较 harness |
-| `tools/verify-expr.ps1` | 表达式引擎 Java oracle harness |
-| `tools/verify-query.ps1` | 查询模型/SQL Java oracle harness |
-| `tools/verify-linkwrite.ps1` | 链接表写入逐字节比较 harness |
-| `tools/verify-cursor.ps1` | 游标 API 逐字节比较 harness |
-| `tools/verify-cursor-range.ps1` | 游标范围/保存点/iterable 逐字节比较 harness |
-| `tools/verify-export.ps1` | 导出/导入文本与数据库比较 harness |
-| `tools/verify-crypt.ps1` | Jet 编码/密码逐字节比较 harness |
-| `tools/verify-crypt-office.ps1` | ACE agile/ECMA 加密比较 harness |
-| `tools/verify-querydb.ps1` | 查询/元数据集成比较 harness |
-| `tools/verify-namemap.ps1` | 名称 map blob 比较 harness |
-| `tools/verify-exportall.ps1` | exportAll/流式比较 harness |
-| `tools/verify-guid.ps1` | GUID 自动编号行为 + 显式 GUID 逐字节 harness |
-| `tools/verify-realquery.ps1` | 真实 Access 查询文件 + ODBC 链接元数据 harness |
-| `tools/verify-jet3.ps1` | Jet 3 / V1997 读取 dump harness（27 个真实文件） |
-| `tools/verify-ole.ps1` | OLE 复合文档 / OleBlob harness |
-| `tools/verify-errorhandler.ps1` | ErrorHandler/DebugErrorHandler 轨迹 harness |
-| `tools/verify-queryprops.ps1` | 查询属性 map / 查询名称 map harness |
-| `tools/verify-customlink.ps1` | CustomLinkResolver 目标移动 harness |
-| `tools/verify-jet3-crypt.ps1` | Jet 3 编码/密码读取 harness |
-| `tools/verify-datetime.ps1` | DateTimeType / ColumnOrder / 写入模式比较 harness |
-| `tools/verify-memdb.ps1` | 内存数据库逐字节比较 harness |
-| `tools/verify-realcrypt.ps1` | 真实 Access/jackcess-encrypt 加密文件 harness |
-| `tools/verify-msisam.ps1` | MSISAM（.mny）读取/解密 harness |
-| `tools/verify-codepage.ps1` | 代码页解码/编码一致性 harness |
-| `tools/verify-apisurface.ps1` | Database/Table 读取 API 面 harness |
-| `tools/verify-jet3-depth.ps1` | Jet 3 深度读取/异常 harness |
-| `tools/verify-miscdeg.ps1` | Double/float 文本、二进制导入、ColumnFormatter harness |
-| `tools/verify-timezone.ps1` | IANA/DST 时区转换 harness |
-| `tools/verify-zonedates.ps1` | 带时区 DATE 模式值/查找 harness |
-| `tools/verify-rowapi.ps1` | Row/表迭代/游标 API harness |
-| `tools/verify-dbapi.ps1` | DatabaseBuilder/iterable/元数据 API harness |
-| `tools/verify-objapi.ps1` | Column/Index/Relationship/TableNameMap API harness |
-| `tools/verify-utilapi.ps1` | DataType/PropertyMap/OleBlob/校验器/EvalConfig API harness |
-| `tools/verify-all.ps1` | 运行上述所有 harness 并汇总 |
-| `src/bin/attachgen.rs`、`src/bin/linkread.rs`、`src/bin/linkwrite.rs`、`src/bin/cursorgen.rs`、`src/bin/cursorrange.rs`、`src/bin/exportgen.rs`、`src/bin/jetcrypt.rs`、`src/bin/officecrypt.rs`、`src/bin/querydb.rs` | 专项 harness 的生成器/dumper |
-| `tools/compare.py`、`tools/bytediff.py`、`tools/pagedump.py` | diff/调试辅助工具 |
-| `out/` | 生成的文件（临时目录） |
+| `src/` | Rust crate（库代码 + `mdbgen` / `mdbdump` / `jetcrypt` / `zonedategen` 四个发布 bin；`src/bin` 下的验证生成器源码也保留，但由 `dev-bins` feature 控制，默认不构建） |
+| `resources/z/` | 编译期嵌入的 zlib 压缩资源（模板、排序表、代码页表，约 1.5 MB）；原始文件不提交 |
+| `Cargo.toml` / `Cargo.lock` | crate 元数据和锁定依赖 |
+| `README.md` / `README.en.md` | 中文 / 英文说明 |
+| `CHANGELOG.md`、`LICENSE`、`NOTICE` | 发布记录、Apache-2.0 许可和上游归属 |
+| `fetch-external.ps1` | 可选：下载开发验证用的 Java 参考库、源码和真实语料（不包含 `tools/`、`java-src/` 与测试 fixture） |
+| `.github/workflows/` | 三系统 CI 与发布打包 |
 
 ## 环境
 
-- Rust：`C:\Tools\Rust`（通过 `C:\Tools\Rust\cargo\bin` 把 `cargo` 放到 `PATH`）
-- JDK：`C:\Tools\JDK25`
-- 参考工具的 Java classpath：`jackcess-5.0.4.jar;java-classes`
-  （编译命令：`javac -encoding UTF-8 -cp jackcess-5.0.4.jar -d java-classes java-src\*.java`）；
-  加密 harness 还会使用
-  `external\jackcess-encrypt-5.0.2.jar;external\bcprov-jdk18on-1.86.jar`
-- Cargo 依赖（通过配置的镜像获取）：`rc4`、`sha1`、`aes`、`sha2`、`md-5`、`base64`、
-  `getrandom`、`roxmltree`、`hex` — 只被加密编解码使用；数据库引擎本身仍然只依赖 std。
+构建和测试本库只需要 Rust 工具链，crate 没有 C/系统库依赖。
 
-```
-cargo build
-cargo test --lib
-powershell -ExecutionPolicy Bypass -File tools\verify-all.ps1
-```
+Java 参考工具、`tools/` 下的 harness、`java-src/`、`external/` 以及 Java-vs-Rust 测试 fixture 只存在于开发树，**不随仓库发布**。`fetch-external.ps1` 可以恢复其中的 Java 参考库、源码和真实 Access/加密语料；完整验证在开发树中执行 `tools\verify-all.ps1`。
+
+默认 feature 下的 Cargo 依赖：
+
+- 核心：`chrono`、`chrono-tz`、`encoding_rs`、`bigdecimal`
+- `crypto`：`aes`、`sha1`、`sha2`、`md-5`、`rc4`、`base64`、`getrandom`、`roxmltree`
+
+数据库引擎的读写核心本身只依赖 std。
 
 ## 架构（对应 Java 类）
 
@@ -482,6 +441,9 @@ powershell -ExecutionPolicy Bypass -File tools\verify-all.ps1
 database；`EvalConfig` 已暴露，但求值器仍使用内置的 temporal/numeric/function 默认值。
 
 ## 端到端比较之外的测试证据
+
+> 同样，本节引用的 harness、oracle 和 fixture 都位于开发树，不在发布仓库中。
+
 
 - `cargo test --lib` — 518 个测试（517 通过，1 个大型 sweep 被忽略）。其中包括：
   - 针对 11 种索引形状和 600 行的索引条目字节与索引页（`indexpagecache::tests::many_rows_match_java_index_pages`：全部 25 个索引页一致），
