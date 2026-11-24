@@ -1,0 +1,56 @@
+[package]
+name = "jackcess"
+version = "5.0.4-rs.1"
+edition = "2021"
+description = "Rust port of the Jackcess MS Access (Jet/ACE) database library"
+license = "Apache-2.0"
+repository = "https://github.com/pcmaclk/jackcess-rs"
+readme = "README.md"
+keywords = ["access", "mdb", "accdb", "jet", "database"]
+categories = ["database", "parser-implementations"]
+exclude = ["target/*", "out/*", "external/*", "java-classes/*", ".rollback-backup-*", ".clippy_*"]
+
+[lib]
+name = "jackcess"
+path = "src/lib.rs"
+
+[[bin]]
+name = "mdbgen"
+path = "src/bin/mdbgen.rs"
+
+[[bin]]
+name = "mdbdump"
+path = "src/bin/mdbdump.rs"
+
+[[bin]]
+name = "jetcrypt"
+path = "src/bin/jetcrypt.rs"
+
+[[bin]]
+name = "zonedategen"
+path = "src/bin/zonedategen.rs"
+
+[features]
+# Tests that need the (uncommitted) Java/vs-Rust fixture corpora under
+# resources/*_ref, tools/ and external/.  They are skipped by default.
+fixtures = []
+
+[profile.release]
+opt-level = 3
+
+[dependencies]
+aes = "0.9.4"
+base64 = "0.23.1"
+bigdecimal = "0.4.11"
+chrono = { version = "0.4.45", default-features = false, features = ["std"] }
+chrono-tz = "0.10.4"
+encoding_rs = "0.8.44"
+getrandom = "0.4.3"
+hex = "0.4.3"
+md-5 = "0.11.0"
+rc4 = "0.2.0"
+roxmltree = "0.21.2"
+sha1 = "0.11.0"
+sha2 = "0.11.1"
+
+

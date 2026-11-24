@@ -1,0 +1,21 @@
+jackcess-rs
+===========
+
+Copyright 2026 jackcess-rs contributors
+
+This product is a Rust port of:
+
+  * Jackcess 5.0.4 — a pure Java library for reading and writing Microsoft
+    Access databases (https://jackcess.sourceforge.io/), licensed under the
+    Apache License, Version 2.0;
+  * jackcess-encrypt 5.0.2 — the encryption add-on for Jackcess
+    (https://jackcessencrypt.sourceforge.io/), licensed under the Apache
+    License, Version 2.0.
+
+Portions of the source, the embedded database templates, the collation and
+property fixtures, and the verification tooling are derived from those
+projects and their test resources.  Their copyright notices remain with their
+respective authors.
+
+The Rust port itself is distributed under the Apache License, Version 2.0
+(see LICENSE).
