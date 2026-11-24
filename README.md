@@ -35,7 +35,7 @@ cargo test --lib --features fixtures
 ```
 powershell -ExecutionPolicy Bypass -File fetch-external.ps1
 # behind a local proxy:
-powershell -ExecutionPolicy Bypass -File fetch-external.ps1 -Proxy http://127.0.0.1:10808
+powershell -ExecutionPolicy Bypass -File fetch-external.ps1 -Proxy http://proxy.example:8080
 ```
 
 ## Feature flags
@@ -789,6 +789,7 @@ header、条目和空闲空间，只在已用区域之后的 1,557 个空闲空�
 `TableImpl.addRows` 语义（文档中已说明，包括何时需要逐行历史）。`diag200` 场景
 （`partialupdate` 表形态加 200 行逐行添加的 filler 行）属于 harness 默认场景，并固定了
 这一点。
+
 
 
 

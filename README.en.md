@@ -42,7 +42,7 @@ not restore the development test fixtures):
 ```
 powershell -ExecutionPolicy Bypass -File fetch-external.ps1
 # behind a local proxy:
-powershell -ExecutionPolicy Bypass -File fetch-external.ps1 -Proxy http://127.0.0.1:10808
+powershell -ExecutionPolicy Bypass -File fetch-external.ps1 -Proxy http://proxy.example:8080
 ```
 
 ## Feature flags
@@ -1183,6 +1183,7 @@ byte-identical for any row count; `Database::add_rows` keeps the batch
 per-row history is needed).  The `diag200` scenario (the `partialupdate` table
 shape plus 200 filler rows added one at a time) is part of the harness
 defaults and pins this.
+
 
 
 

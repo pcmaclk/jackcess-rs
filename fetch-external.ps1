@@ -4,7 +4,7 @@
 #   external/jackcess-test-resources/        (real Access databases, V1997..V2019)
 #   external/jackcessencrypt-test/           (real encrypted/encoded/Money files)
 # It also fetches the jackcess-5.0.4 jar/sources at the repository root when
-# they are missing.  Pass -Proxy http://127.0.0.1:10808 when GitHub/Maven need
+# they are missing.  Pass -Proxy http://proxy.example:8080 when GitHub/Maven need
 # a local proxy.
 param(
   [string]$Proxy = "",
@@ -69,5 +69,6 @@ Expand-TestData "https://codeload.github.com/spannm/jackcess/tar.gz/refs/heads/m
 Expand-TestData "https://codeload.github.com/jahlborn/jackcessencrypt/tar.gz/refs/heads/master" "jackcessencrypt-master.tar.gz" "jackcessencrypt-master" "src/test/data" (Join-Path $external "jackcessencrypt-test")
 
 Write-Host "reference material ready under $external"
+
 
 
